@@ -1,11 +1,13 @@
 import os
-from src.data_loader import cargar_dataset
+from src.data_loader import cargar_dataset, dataset_global
+import src.data_loader as dl
 from src.estadisticas import calcular_estadisticas
 from src.tendencias import ver_tendencias
 from src.comparacion import menu_comparaciones
 from src.outliers import menu_outliers
 from src.variacionyestabilidad import analizar_suicidios
 from src.visualizacion import mostrar_visualizaciones
+from src.segmentacion import segmentacion_tendencia
 
 def limpiar_pantalla():
     os.system('cls')
@@ -48,7 +50,10 @@ if __name__ == '__main__':
                     limpiar_pantalla()
                     menu_outliers()
                 case 7:
-                    segmentacion_tendencia()
+                    if dl.dataset_global is None:
+                        print("Primero debe cargar el dataset (opción 1).")
+                    else:
+                        segmentacion_tendencia(dl.dataset_global)
                 case 8:
                     limpiar_pantalla()
                     mostrar_visualizaciones()

@@ -1,3 +1,5 @@
+import pandas as pd
+
 def segmentacion_tendencia(df):
     print("\n=== SEGMENTACIÓN DE TENDENCIAS POR PAÍS ===\n")
 
