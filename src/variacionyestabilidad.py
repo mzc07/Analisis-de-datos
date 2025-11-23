@@ -1,87 +1,65 @@
 import pandas as pd
 import numpy as np
+import src.data_loader as data_loader   # importar el módulo completo
 
 
-df = pd.read_csv("D:/USUARIO/Mis documentos/Hogar/Analisis-de-datos-main/data/dataset.csv")
+def analizar_suicidios():
+    """
+    Analiza variación interna, estabilidad y outliers del dataset global.
+    Usa el dataset cargado previamente en data_loader.
+    """
 
-print("Vista inicial del dataset:")
-print(df.head(), "\n")
+    if data_loader.dataset_global is None:
+        print("Error: el dataset no está cargado. Use la opción 1 del menú primero.")
+        return
 
+    df = data_loader.dataset_global.copy()
 
-#  Limpieza, Se asegura que el año sea entero y que la tasa sea numérica y se ordenan los registros por país y año 
+    # Limpieza
+    df["Year"] = pd.to_numeric(df["Year"], errors="coerce").astype("Int64")
+    df["Suicide Rate"] = pd.to_numeric(df["Suicide Rate"], errors="coerce")
 
-df['Year'] = df['Year'].astype(int)
-df['Suicide Rate'] = pd.to_numeric(df['Suicide Rate'], errors='coerce')
+    df = df.sort_values(["Country Name", "Year"]).reset_index(drop=True)
 
-df = df.sort_values(by=["Country Name", "Year"]).reset_index(drop=True)
+    # Variación interna por país
+    variation_df = df.groupby("Country Name").agg(
+        mean_rate=("Suicide Rate", "mean"),
+        min_rate=("Suicide Rate", "min"),
+        max_rate=("Suicide Rate", "max"),
+        std_rate=("Suicide Rate", "std"),
+    )
+    variation_df["range"] = variation_df["max_rate"] - variation_df["min_rate"]
+    variation_df["CV"] = variation_df["std_rate"] / variation_df["mean_rate"]
 
+    stability_rank = variation_df.sort_values("CV")
 
+    # Cambios interanuales
+    df["yearly_change"] = df.groupby("Country Name")["Suicide Rate"].diff()
 
+    threshold = df["yearly_change"].abs().std() * 3
+    yearly_outliers = df[df["yearly_change"].abs() > threshold]
 
-# Variación interna
-variation_df = df.groupby("Country Name").agg(
-    mean_rate=("Suicide Rate", "mean"),# valor promedio
-    min_rate=("Suicide Rate", "min"),
-    max_rate=("Suicide Rate", "max"),
-    std_rate=("Suicide Rate", "std") # desviación estándar 
-)
-# cuánto varía la tasa entre su máximo y mínimo.
-variation_df["range"] = variation_df["max_rate"] - variation_df["min_rate"]
+    # Estabilidad global
+    global_stability = df.groupby("Year")["Suicide Rate"].std()
 
-# CV bajo = país estable CV alto = país inestable
+    # Variación interna mínima y máxima
+    least_variation = variation_df.sort_values("range").head(10)
+    most_variation = variation_df.sort_values("range", ascending=False).head(10)
 
-variation_df["CV"] = variation_df["std_rate"] / variation_df["mean_rate"]
+    print("\n>>> Países más estables (menor CV):")
+    print(stability_rank.head(10))
 
-print(">>> Variación interna (primeros países):")
-print(variation_df.head(), "\n")
+    print("\n>>> Países menos estables (mayor CV):")
+    print(stability_rank.tail(10))
 
+    print("\n>>> Cambios atípicos (shocks):")
+    print(yearly_outliers.head(10))
 
+    print("\n>>> Estabilidad global por año (std):")
+    print(global_stability)
 
-# estabilidad
+    print("\n>>> Países con menor variación interna:")
+    print(least_variation)
 
-# mayor estabilidad = CV bajo
-
-estability_rank = variation_df.sort_values(by="CV")
-
-print(">>> Países más estables (menor CV):")
-print(estability_rank.head(10), "\n")
-
-print(">>> Países menos estables (mayor CV):")
-print(estability_rank.tail(10), "\n")
-
-
-
-# cambio entre un año y el siguiente para cada país.
-
-df["yearly_change"] = df.groupby("Country Name")["Suicide Rate"].diff()
-
-# Identificar valores anómalos un cambio anormalmente grande.
-
-threshold = df["yearly_change"].abs().std() * 3
-outliers = df[df["yearly_change"].abs() > threshold]
-
-print(">>> Años con cambios atípicos (shocks):")
-print(outliers.head(10), "\n")
-
-
-
-# estabilidad global por año desviación estándar mundial para cada año.
-
-global_stability = df.groupby("Year")["Suicide Rate"].std()
-
-print(">>> Estabilidad global (desviación estándar por año):")
-print(global_stability, "\n")
-
-
-# Variación interna y estabilidad
-
-
-# Ordenar por variación 
-least_variation = variation_df.sort_values("range").head(10)
-most_variation = variation_df.sort_values("range", ascending=False).head(10)
-
-print("\n>>> Países con menor variación interna (rango más bajo):")
-print(least_variation)
-
-print("\n>>> Países con mayor variación interna (rango más alto):")
-print(most_variation)
+    print("\n>>> Países con mayor variación interna:")
+    print(most_variation)

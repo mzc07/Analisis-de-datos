@@ -7,10 +7,18 @@ dataset_global = None   # variable global compartida
 def cargar_dataset():
     global dataset_global
     try:
+        # Intentar cargar desde URL
         dataset_global = pd.read_csv(url_dataset)
+        print("Dataset cargado desde la URL con éxito.")
+    
     except Exception as error:
-        print(f'Error: {error}')
-        return None
-    else:
-        print("Dataset cargado con exito.")
-        return dataset_global
+        print(f"Error al cargar desde URL: {error}")
+        print("Intentando acceder localmente al archivo...")
+        try:
+            dataset_global = pd.read_csv(r'data\dataset.csv')
+            print("Dataset cargado localmente con éxito.")
+        except Exception as err_local:
+            print(f"Error al cargar localmente: {err_local}")
+            dataset_global = None
+    
+    return dataset_global

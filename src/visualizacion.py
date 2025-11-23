@@ -1,15 +1,16 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from data_loader import dataset_global, cargar_dataset
+import src.data_loader as data_loader   # Importar módulo completo
+
 
 def mostrar_visualizaciones():
-    # Si el dataset no está cargado, lo cargamos
-    df = dataset_global
-    if df is None:
-        df = cargar_dataset()
+    df = data_loader.dataset_global
 
-    # HISTOGRAMA: muestra cómo se distribuyen los valores de la tasa de suicidio
+    if df is None:
+        df = data_loader.cargar_dataset()
+
+    # HISTOGRAMA
     plt.figure(figsize=(8,5))
     plt.hist(df["Suicide Rate"], bins=30)
     plt.title("Distribución de la Tasa de Suicidio (Histograma)")
@@ -17,14 +18,14 @@ def mostrar_visualizaciones():
     plt.ylabel("Frecuencia")
     plt.show()
 
-    # BOXPLOT: permite ver valores atípicos y la dispersión general
+    # BOXPLOT
     plt.figure(figsize=(7,5))
     sns.boxplot(x=df["Suicide Rate"])
-    plt.title("Dispersión y Valores Atípicos de la Tasa de Suicidio (Boxplot)")
+    plt.title("Dispersión y Valores Atípicos (Boxplot)")
     plt.xlabel("Tasa de suicidio")
     plt.show()
 
-    # LÍNEA POR AÑO: cómo cambia la tasa de suicidio promedio a través del tiempo
+    # LÍNEA POR AÑO
     tasas_por_anio = df.groupby("Year")["Suicide Rate"].mean()
     plt.figure(figsize=(9,5))
     plt.plot(tasas_por_anio.index, tasas_por_anio.values)
@@ -33,29 +34,26 @@ def mostrar_visualizaciones():
     plt.ylabel("Tasa promedio")
     plt.show()
 
-    # MAPA DE CALOR: correlación entre columnas numéricas del dataset
+    # HEATMAP
     plt.figure(figsize=(8,6))
     sns.heatmap(df.corr(numeric_only=True), annot=True)
-    plt.title("Mapa de Calor de Correlaciones del Dataset")
+    plt.title("Mapa de Calor de Correlaciones")
     plt.show()
 
-    # BARRAS: ranking del promedio histórico por país
+    # BARRAS
     ranking = df.groupby("Country Name")["Suicide Rate"].mean().sort_values(ascending=False)
     plt.figure(figsize=(10,12))
     ranking.plot(kind="bar")
-    plt.title("Promedio Histórico de Tasa de Suicidio por País")
+    plt.title("Promedio Histórico por País")
     plt.xlabel("País")
-    plt.ylabel("Promedio de tasa de suicidio")
+    plt.ylabel("Tasa promedio")
     plt.tight_layout()
     plt.show()
 
-    # DISPERSIÓN: relación entre el año y la tasa de suicidio
+    # DISPERSIÓN
     plt.figure(figsize=(8,5))
     plt.scatter(df["Year"], df["Suicide Rate"])
-    plt.title("Relación entre Año y Tasa de Suicidio (Dispersión)")
+    plt.title("Año vs Tasa de Suicidio")
     plt.xlabel("Año")
     plt.ylabel("Tasa de suicidio")
     plt.show()
-
-if __name__ == "__main__":
-    mostrar_visualizaciones()

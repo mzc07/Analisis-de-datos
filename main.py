@@ -4,6 +4,8 @@ from src.estadisticas import calcular_estadisticas
 from src.tendencias import ver_tendencias
 from src.comparacion import menu_comparaciones
 from src.outliers import menu_outliers
+from src.variacionyestabilidad import analizar_suicidios
+from src.visualizacion import mostrar_visualizaciones
 
 def limpiar_pantalla():
     os.system('cls')
@@ -39,15 +41,17 @@ if __name__ == '__main__':
                 case 4:
                     limpiar_pantalla()
                     menu_comparaciones() 
-                case 5: 
-                    None
+                case 5:
+                    limpiar_pantalla()
+                    analizar_suicidios()
                 case 6:
                     limpiar_pantalla()
                     menu_outliers()
                 case 7:
                     segmentacion_tendencia()
                 case 8:
-                    None
+                    limpiar_pantalla()
+                    mostrar_visualizaciones()
                 case 0:
                     print("Gracias por usar el programa.")
                     break
