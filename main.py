@@ -45,9 +45,9 @@ if __name__ == '__main__':
                     limpiar_pantalla()
                     menu_outliers()
                 case 7:
-                    None
+                    segmentacion_tendencia()
                 case 8:
-                    None
+                    
                 case 0:
                     print("Gracias por usar el programa.")
                     break
